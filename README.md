@@ -2,19 +2,21 @@
 This package is a convenient wrapper around the publicly available [OECD Data Explorer APIs](https://data-explorer.oecd.org/),
 which adds resilience and extra consistency checks, while also making it easier to work with (see the important information below).
 
-The main class is the (`OECD` class)[https://github.com/dennisdeh/OECDapi/blob/a95493e401316df0269a736b35e5869495051f3b/modules/oecd.py], which has two distinct modes of operating: 
+The main class is the [`OECD` class](modules/oecd.py), which has two distinct modes of operating: 
  - Legacy mode: It can be run in 'legacy' mode, which involves sending URL requests to the OECD Data Explorer APIs. A rudimentary approach to retrials is implemented.
  - Celery mode: Alternatively it can be run in 'celery' mode, where a [Celery backend](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) 
 ensures proper task queuing, exceptions handling and asynchronous operation using [redis](https://redis.io/).
 
 The necessary containers are all defined in the docker-compose file, which also includes an SQL database container
-where results can be stored, and the interaction with SQL servers is conveniently build into the (`OECD` class)[https://github.com/dennisdeh/OECDapi/blob/a95493e401316df0269a736b35e5869495051f3b/modules/oecd.py].
+where results can be stored, and the interaction with SQL servers is conveniently build into the [`OECD` class](modules/oecd.py).
 
 ## Installation
 Clone the repository and follow the usage instructions below to integrate it into your workflow.
 
 ## Usage Instructions
-The newest data available for a given statistical series from the publicly available OECD API can be 
+Two main files are created to demonstrate the two distinct operating modes of the `OECD` class, i.e. [main_OECD_celery_async.py] and [main_OECD_legacy_celery-wait.py].
+
+Basically the newest data available for a given statistical series from the publicly available OECD API can be 
 queried using the method `oecd_query()`.
 
 Some commonly used data series are predefined for convenience with their own methods:
