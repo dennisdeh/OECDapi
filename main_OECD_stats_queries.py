@@ -1,47 +1,44 @@
-from OECDapi.OECD_stats_queries import OECD_query, key_shortterm_indicators_summary, \
-    MEI_leading_indicators, consumer_price_indices_all, consumer_price_indices_NI
-
+from modules.oecd import OECD
+# Legacy mode (no task queuing with a celery backend)
+#oecd = OECD(task_queuing="legacy", silent=False)
+oecd = OECD(task_queuing="celery_wait", tasks_module="modules.databases.tasks", silent=False)
+# oecd = OECD(task_queuing="celery_submit", silent=False)
+# d_out = oecd.download_all_data()
+# oecd.update_db(d=d_out, database="standard")
+#
+# # general query
+# df0 = oecd.oecd_query(
+#     agency_identifier="OECD.SDD.STES",
+#     dataflow_identifier="DSD_STES@DF_BTS",
+#     dataflow_version=None,  # choose newest
+#     filter_expression="USA.M.EM......",  # in v1 format; will be converted to v2 format
+#     # optional_parameters=None,
+#     optional_parameters={"c[TIME_PERIOD]": "ge:2018+le:2024"},
+#     sdmx_version=2,
+# )
 # ---------------------------------------------------------------- #
 # Key short-term economic indicators (KEI series)
 # ---------------------------------------------------------------- #
-df1 = key_shortterm_indicators_summary(countries="USA")
+df1 = oecd.key_economic_indicators()
+df2 = oecd.key_economic_indicators(countries=["USA", "EA19", "OECD"])
 
 # ---------------------------------------------------------------- #
 # Monthly Economic Indicators (MEI series)
 # ---------------------------------------------------------------- #
-df2 = MEI_leading_indicators(countries=["USA", "EA19", "OECD"])
+df3 = oecd.business_tendency_surveys()
+df4 = oecd.composite_leading_indicators()
+df5 = oecd.financial_indicators()
+df6 = oecd.production_and_sales()
 
 # ---------------------------------------------------------------- #
-# Consumer price indices (PRICES_CPI series)
+# Consumer price indices (CPI series)
 # ---------------------------------------------------------------- #
-# all types (growth etc.)
-df3 = consumer_price_indices_all(countries="USA")
-# national index only data
-df4 = consumer_price_indices_NI(countries="USA")
-
-# %% Not yet integrated data series that are useful
-# general simple request for MEI_CLI, no parsing
-request = (
-    "MEI_CLI/.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LUX+MEX+NLD+NZL"
-    "+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+G4E+G-7+NAFTA+OECDE+OECD+ONM+A5M+BRA+CHN+IND+IDN+RUS"
-    "+ZAF.M/all"
+df7a = oecd.consumer_price_indices()
+df7b = oecd.consumer_price_indices(
+    countries="EA20", frequency="M", methodology="HICP"
 )
 
-# Business Tendency and Consumer Opinion Surveys: Manufacturing, Production
-df5 = OECD_query(
-    series="MEI_BTS_COS",
-    subject="BS+BSPR+BSPRTE+BSBUCT",
-    country="AUS",
-    measure="BLSA",
-    frequency="Q",
-    columns_prefix="Manufacturing_Production_",
-)
-# Business Tendency and Consumer Opinion Surveys: Manufacturing, Finished goods stocks
-df6 = OECD_query(
-    series="MEI_BTS_COS",
-    subject="BS+BSFG+BSFGLV",
-    country="AUS",
-    measure="BLSA",
-    frequency="Q",
-    columns_prefix="MFG_",
-)
+# ---------------------------------------------------------------- #
+# Batch
+# ---------------------------------------------------------------- #
+d_out = oecd.celery_submit_several_jobs_all_data()

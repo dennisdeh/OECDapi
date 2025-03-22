@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import importlib
 import os
+import sys
 import platform
 import time
 from typing import Union
@@ -45,27 +46,33 @@ def celery_workers_start(
         else:
             assert isinstance(pool, str), "pool must be a string"
             assert pool in ["solo", "threads", "gevent", "eventlet"]
-        # # check that celery is installed
-        # command = "celery"
-        # # Ensure the command exists in PATH or provide absolute path
-        # command_path = shutil.which(command)  # Searches for the command in PATH
-        # if not command_path:
-        #     raise FileNotFoundError(f"Command 'celery' not found in PATH. Ensure it is installed.")
+        # Use the Python executable from the active environment to invoke Celery
+        python_executable = sys.executable  # Gets the current Python executable in use
+        celery_entry_point = [
+            python_executable,
+            "-m",
+            "celery",
+            "-A",
+            str(tasks).split("'")[1],
+            "--workdir",
+            os.path.abspath(os.getcwd()),
+            "-q",
+            "worker",
+            f"--pool={pool}",
+            f"--concurrency={concurrency}",
+            "broker_connection_retry_on_startup=True",
+        ]
+        try:
+            # Start the Celery worker process
+            return subprocess.Popen(celery_entry_point)
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "Celery could not be started. Ensure it is installed in your conda environment "
+                "and accessible via the active Python interpreter."
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to start Celery workers: {e}")
 
-        return subprocess.Popen(
-            [
-                "celery",
-                "-A",
-                str(tasks).split("'")[1],
-                "--workdir",
-                os.path.abspath(os.getcwd()),
-                "-q",
-                "worker",
-                f"--pool={pool}",
-                f"--concurrency={concurrency}",
-                "broker_connection_retry_on_startup=True",
-            ]
-        )
     else:
         print("Task queuing is not using Celery, invocation ignored")
 
