@@ -1,14 +1,14 @@
-## OECD API
+## OECDapi - Resilient and Asynchronous 
 This package is a convenient wrapper around the publicly available [OECD Data Explorer APIs](https://data-explorer.oecd.org/),
 which adds resilience and extra consistency checks, while also making it easier to work with (see the important information below).
 
-The main class is the `OECD` class, which has two distinct modes of operating: 
+The main class is the (`OECD` class)[modules/oecd.py], which has two distinct modes of operating: 
  - Legacy mode: It can be run in 'legacy' mode, which involves sending URL requests to the OECD Data Explorer APIs. A rudimentary approach to retrials is implemented.
  - Celery mode: Alternatively it can be run in 'celery' mode, where a [Celery backend](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) 
 ensures proper task queuing, exceptions handling and asynchronous operation using [redis](https://redis.io/).
 
 The necessary containers are all defined in the docker-compose file, which also includes an SQL database container
-where results can be stored, and the interaction with SQL servers is conveniently build into the `OECD` class.
+where results can be stored, and the interaction with SQL servers is conveniently build into the (`OECD` class)[modules/oecd.py].
 
 ## Installation
 Clone the repository and follow the usage instructions below to integrate it into your workflow.
@@ -24,7 +24,8 @@ Some commonly used data series are predefined for convenience with their own met
  - financial_indicators
  - production_and_sales
  - consumer_price_indices
-Find more data series here: https://data-explorer.oecd.org/
+
+ Find more data series here: https://data-explorer.oecd.org/
 
 ### Celery and redis backends (Celery mode)
 In Celery mode, Async objects are collected and can afterward be processed once all data has 
