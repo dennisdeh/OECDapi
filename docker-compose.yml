@@ -1,0 +1,49 @@
+# Compose file for OECD database and MQ
+
+services:
+  # databases
+  db:
+    container_name: db
+    image: mariadb:lts-ubi
+    command:
+      - --max_allowed_packet=107374182400  # 100GB
+      - --max_connections=20000
+      - --innodb_buffer_pool_size=256M
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - ${DB_PORT_HOST}:${DB_PORT_CONT}
+    volumes:
+      # bind-mount the sql files that should be run while initialising
+      - ./init:/docker-entrypoint-initdb.d
+    healthcheck:  # define health-check that service is ready
+      interval: 2s
+      retries: 20
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      timeout: 30s
+  # administration
+  adminer:
+    container_name: adm
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    restart: always
+    ports:
+      - ${ADMINER_PORT_HOST}:${ADMINER_PORT_CONT}
+  # redis
+  redis:
+    container_name: ${REDIS_CONT_NAME}
+    image: redis:7.4.2-alpine
+    restart: always
+    ports:
+      - ${REDIS_PORT_HOST}:${REDIS_PORT_CONT}
