@@ -2,10 +2,15 @@
 This package is a convenient wrapper around the publicly available [OECD Data Explorer APIs](https://data-explorer.oecd.org/),
 which adds resilience and extra consistency checks, while also making it easier to work with (see the important information below).
 
-The main class is the [`OECD` class](modules/oecd.py), which has two distinct modes of operating: 
- - Legacy mode: It can be run in 'legacy' mode, which involves sending URL requests to the OECD Data Explorer APIs. A rudimentary approach to retrials is implemented.
- - Celery mode: Alternatively it can be run in 'celery' mode, where a [Celery backend](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) 
-ensures proper task queuing, exceptions handling and asynchronous operation using [redis](https://redis.io/).
+The main class is the [`OECD` class](modules/oecd.py), which has two distinct modes of operating defined by the `task_queuing` parameter: 
+ - Legacy mode (task_queuing='legacy'): It can be run in 'legacy' mode, which involves sending URL requests to the OECD Data Explorer APIs. 
+A rudimentary approach to retrials is implemented. In legacy mode dataframes containing the data are directly returned.
+ - Celery mode (task_queuing='celery_submit' and task_queuing='celery_wait'): Alternatively the class can be used in 'celery' mode, 
+where a [Celery backend](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) ensures proper task queuing, exceptions 
+handling and asynchronous operation using [redis](https://redis.io/). 
+Notice that of the two Celery modes, only task_queuing='celery_submit' has a real asynchronous operation, as task_queuing='celery_wait' 
+always wait for the data to be returned before continuing and converts the data to dataframes directly. 
+For task_queuing='celery_submit' the asynchronous objects are retained until the `process_celery_results` processes the objects (see further details below). 
 
 The necessary containers are all defined in the docker-compose file, which also includes an SQL database container
 where results can be stored, and the interaction with SQL servers is conveniently build into the [`OECD` class](modules/oecd.py).
