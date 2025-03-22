@@ -14,7 +14,8 @@ where results can be stored, and the interaction with SQL servers is convenientl
 Clone the repository and follow the usage instructions below to integrate it into your workflow.
 
 ## Usage Instructions
-Two main files are created to demonstrate the two distinct operating modes of the `OECD` class, i.e. [main_OECD_celery_async.py] and [main_OECD_legacy_celery-wait.py].
+Two main files are created to demonstrate the two distinct operating modes of the `OECD` class, i.e. 
+[main_OECD_celery_async.py](main_OECD_celery_async.py) and [main_OECD_legacy_celery-wait.py](main_OECD_legacy_celery-wait.py).
 
 Basically the newest data available for a given statistical series from the publicly available OECD API can be 
 queried using the method `oecd_query()`.
