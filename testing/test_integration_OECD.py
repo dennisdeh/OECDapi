@@ -1,14 +1,11 @@
 import unittest
-from modules.utils.oecd import OECD
-import modules.utils.dictionaries as dicts
+from modules.oecd import OECD
 import modules.databases.db_connection as db
 import sqlalchemy
-from modules.testing.aa_cleaner.clean_test_database import (
-    clean_test_database,
-    reset_test_tables,
-)
+import os
 
-path_db_env = "./modules/databases/.env"
+db_testing = "standard"
+path_db_env = f"{os.getcwd()}/.env"
 test_oecd = True
 
 
@@ -23,17 +20,13 @@ class OECD_SQL(unittest.TestCase):
     def setUpClass(cls):
         """
         Setup of symbols, paths, objects, etc. needed for OECD and
-        database interactions:
-            - All tables in the "testing_" database are truncated
-            and verified to be empty
+        database interactions
         """
         # 0: Initialisation
         # 0.1: initialise database and OECD
         db.load_env_variables(path=path_db_env)
-        cls.engine = db.get_engine("testing_")
+        cls.engine = db.get_engine(db_testing)
         cls.oecd = OECD(silent=False, task_queuing="celery_submit", start_celery=True)
-        # 0.2: delete all tables in the testing database
-        reset_test_tables(engine=cls.engine, confirm=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -50,7 +43,7 @@ class OECD_SQL(unittest.TestCase):
         self.assertEqual(len(d0), 6)
 
         # 1: upload
-        self.oecd.update_db(d0, "testing_")
+        self.oecd.update_db(d0, db_testing)
 
         # 2: get row numbers, assert they are larger than zero
         d_rows = {}
@@ -72,7 +65,7 @@ class OECD_SQL(unittest.TestCase):
                     )
 
         # 3: upload again and check that the row numbers did not change
-        self.oecd.update_db(d0, "testing_")
+        self.oecd.update_db(d0, db_testing)
         with self.engine.connect() as connection:
             md = sqlalchemy.MetaData()
             md.reflect(bind=self.engine)

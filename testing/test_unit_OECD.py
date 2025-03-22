@@ -1,10 +1,11 @@
 import unittest
-from modules.utils.oecd import OECD
+from modules.oecd import OECD
 import modules.utils.dictionaries as dicts
 import pandas as pd
 from celery.result import AsyncResult
+import os
 
-path_db_env = "./modules/databases/.env"
+path_db_env = os.getcwd()
 test_oecd = True
 
 
